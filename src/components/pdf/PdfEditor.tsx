@@ -865,6 +865,43 @@ export default function PdfEditor() {
                 onEditText={(key, nextText) => updateEdit(key, { newText: nextText })}
                 onDoneEditing={() => setActiveKey(null)}
                 onViewport={(pageNum, vp) => {
+                  const prevVp = pageViewportRef.current.get(pageNum);
+                  // Keep existing edits aligned when the page viewport changes (e.g. zoom/scale rerender).
+                  // Edits are stored in viewport (px) coordinates, so we rescale them to the new viewport.
+                  if (
+                    prevVp &&
+                    vp &&
+                    Number.isFinite(prevVp.width) &&
+                    Number.isFinite(prevVp.height) &&
+                    Number.isFinite(vp.width) &&
+                    Number.isFinite(vp.height) &&
+                    (prevVp.width !== vp.width || prevVp.height !== vp.height)
+                  ) {
+                    const rx = vp.width / prevVp.width;
+                    const ry = vp.height / prevVp.height;
+                    // Guard against bad ratios.
+                    if (Number.isFinite(rx) && Number.isFinite(ry) && rx > 0 && ry > 0) {
+                      setEdits((prev) => {
+                        let changed = false;
+                        const next: Record<string, PdfTextEdit> = { ...prev };
+                        for (const [k, e] of Object.entries(prev)) {
+                          if (e.pageNumber !== pageNum) continue;
+                          changed = true;
+                          next[k] = {
+                            ...e,
+                            x: e.x * rx,
+                            y: e.y * ry,
+                            width: e.width * rx,
+                            height: e.height * ry,
+                            fontSize: e.fontSize * ry,
+                            padding: (e.padding ?? 2) * ry,
+                          };
+                        }
+                        return changed ? next : prev;
+                      });
+                    }
+                  }
+
                   pageViewportRef.current.set(pageNum, vp);
                 }}
               />
