@@ -295,6 +295,7 @@ export default function PdfEditor() {
                   activeKey={activeKey}
                   onPickText={upsertFromBox}
                   onMoveActive={(key, nextX, nextY) => updateEdit(key, { x: nextX, y: nextY })}
+                  onEditText={(key, nextText) => updateEdit(key, { newText: nextText })}
                 />
               ))
             )}
@@ -394,8 +395,9 @@ function PdfPage(props: {
   activeKey: string | null;
   onPickText: (box: PdfTextItemBox) => void;
   onMoveActive: (key: string, nextX: number, nextY: number) => void;
+  onEditText: (key: string, nextText: string) => void;
 }) {
-  const { pdf, pageNumber, scale, edits, activeKey, onPickText, onMoveActive } = props;
+  const { pdf, pageNumber, scale, edits, activeKey, onPickText, onMoveActive, onEditText } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [viewport, setViewport] = useState<any>(null);
   const [boxes, setBoxes] = useState<PdfTextItemBox[]>([]);
@@ -445,6 +447,7 @@ function PdfPage(props: {
   }, [pdf, pageNumber, scale]);
 
   const activeOnThisPage = activeKey?.startsWith(`${pageNumber}:`) ? activeKey : null;
+  const activeEdit = activeOnThisPage ? edits[activeOnThisPage] : null;
 
   return (
     <Card className="p-3">
@@ -499,8 +502,56 @@ function PdfPage(props: {
             );
           })}
         </div>
+
+        {/* Inline editor for the active selection (type directly on the PDF) */}
+        {activeEdit ? (
+          <InlineTextEditor
+            key={`inline-${activeEdit.key}-${activeEdit.x}-${activeEdit.y}`}
+            edit={activeEdit}
+            onChange={(t) => onEditText(activeEdit.key, t)}
+          />
+        ) : null}
       </div>
     </Card>
+  );
+}
+
+function InlineTextEditor(props: {
+  edit: PdfTextEdit;
+  onChange: (next: string) => void;
+}) {
+  const { edit, onChange } = props;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, [edit.key]);
+
+  return (
+    <div
+      className="absolute z-30"
+      style={{ left: edit.x, top: edit.y, width: edit.width }}
+    >
+      <input
+        ref={inputRef}
+        value={edit.newText}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") {
+            (e.currentTarget as HTMLInputElement).blur();
+          }
+        }}
+        className="h-full w-full rounded-sm border border-ring bg-background/90 px-1 outline-none"
+        style={{
+          height: edit.height,
+          fontSize: edit.fontSize,
+          lineHeight: 1.05,
+          color: edit.colorHex,
+        }}
+        aria-label="Edit selected PDF text"
+      />
+    </div>
   );
 }
 
