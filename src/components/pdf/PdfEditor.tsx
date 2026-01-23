@@ -87,6 +87,9 @@ export default function PdfEditor() {
   const [isLoading, setIsLoading] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [edits, setEdits] = useState<Record<string, PdfTextEdit>>({});
+  const [replaceFind, setReplaceFind] = useState<string>("");
+  const [replaceWith, setReplaceWith] = useState<string>("");
+  const [replaceAllInSelection, setReplaceAllInSelection] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -153,6 +156,22 @@ export default function PdfEditor() {
       return { ...prev, [box.key]: next };
     });
     setActiveKey(box.key);
+    setReplaceFind("");
+    setReplaceWith("");
+  };
+
+  const applyReplaceWithinSelection = () => {
+    if (!activeEdit) return;
+    const find = replaceFind;
+    const withText = replaceWith;
+    if (!find) return;
+
+    const current = activeEdit.newText ?? "";
+    const next = replaceAllInSelection
+      ? current.split(find).join(withText)
+      : current.replace(find, withText);
+
+    updateEdit(activeEdit.key, { newText: next });
   };
 
   const exportPdf = async () => {
@@ -335,6 +354,54 @@ export default function PdfEditor() {
                   />
                 </div>
 
+                <div className="rounded-md border border-border bg-card p-3">
+                  <div className="text-xs font-medium">Replace within this selection</div>
+                  <div className="mt-3 grid gap-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="replace-find" className="text-xs text-muted-foreground">
+                          Find
+                        </Label>
+                        <Input
+                          id="replace-find"
+                          value={replaceFind}
+                          onChange={(e) => setReplaceFind(e.target.value)}
+                          placeholder="word"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="replace-with" className="text-xs text-muted-foreground">
+                          Replace with
+                        </Label>
+                        <Input
+                          id="replace-with"
+                          value={replaceWith}
+                          onChange={(e) => setReplaceWith(e.target.value)}
+                          placeholder="new word"
+                        />
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={replaceAllInSelection}
+                        onChange={(e) => setReplaceAllInSelection(e.target.checked)}
+                      />
+                      Replace all matches in this selection
+                    </label>
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={applyReplaceWithinSelection}
+                      disabled={!replaceFind}
+                    >
+                      Apply replace
+                    </Button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="font-size">Font size</Label>
@@ -374,6 +441,8 @@ export default function PdfEditor() {
                       return next;
                     });
                     setActiveKey(null);
+                    setReplaceFind("");
+                    setReplaceWith("");
                   }}
                 >
                   Discard change
