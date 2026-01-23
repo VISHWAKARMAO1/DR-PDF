@@ -319,26 +319,31 @@ function getItemBoxes(textContent: any, viewport: any, pageNumber: number): PdfT
   const styles = (textContent.styles ?? {}) as Record<string, any>;
   const boxes: PdfTextItemBox[] = [];
 
+  const util = (pdfjsLib as any).Util;
+
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     if (!item.str?.trim()) continue;
 
-    // More reliable approach across PDFs:
-    // Build a rectangle in *PDF page coordinates* then convert to viewport.
-    // item.transform is [a,b,c,d,e,f] where (e,f) is text origin in PDF units.
+    // Compute a robust axis-aligned bounding box in viewport coordinates.
+    // PDF.js text items use a transform matrix; the most reliable approach is to
+    // transform the item matrix by the viewport matrix.
+    // Ref: PDF.js text layer positioning.
     const tf: number[] | undefined = item.transform;
-    const e = tf?.[4] ?? 0;
-    const f = tf?.[5] ?? 0;
-    const w = Math.abs(item.width ?? 0);
-    const h = Math.abs(tf?.[3] ?? item.height ?? 0);
+    if (!tf || !util?.transform) continue;
+    const tx = util.transform(viewport.transform, tf) as number[];
 
-    if (!Number.isFinite(e) || !Number.isFinite(f) || w <= 0 || h <= 0) continue;
+    const x = tx[4];
+    const y = tx[5];
+    const rawWidth = Number(item.width ?? 0);
+    const fullWidth = Math.max(6, Math.abs(rawWidth) * (Number(viewport.scale ?? 1) || 1));
+    const height = Math.max(6, Math.hypot(tx[2], tx[3]));
 
-    const rect = viewport.convertToViewportRectangle([e, f, e + w, f + h]);
-    const x0 = Math.min(rect[0], rect[2]);
-    const y0 = Math.min(rect[1], rect[3]);
-    const fullWidth = Math.max(6, Math.abs(rect[2] - rect[0]));
-    const height = Math.max(6, Math.abs(rect[3] - rect[1]));
+    if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+
+    // y in viewport coords is the text baseline; convert to a top-left box.
+    const x0 = x;
+    const y0 = y - height;
 
     // Word-level boxes: approximate by distributing the item's width by character positions.
     // This makes “replace only that word” possible for most text PDFs.
