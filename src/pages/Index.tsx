@@ -241,8 +241,8 @@ const Index = () => {
               },
               {
                 title: "Compress",
-                desc: "Reduce the size of your PDF (coming soon).",
-                to: "/editor",
+                desc: "Reduce the size of your PDF.",
+                to: "/compress",
               },
               {
                 title: "Delete Pages",
