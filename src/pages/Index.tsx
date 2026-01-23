@@ -70,7 +70,7 @@ const Index = () => {
           title: "Alternate & Mix",
           desc: "Mix pages from 2 or more documents, alternating between them.",
           icon: Columns2,
-          to: "/editor",
+          to: "/alternate-mix",
         },
         {
           title: "Merge",
