@@ -33,6 +33,15 @@ import { cn } from "@/lib/utils";
 import type { PdfFontPreset, PdfTextEdit, PdfTextItemBox } from "./pdfTypes";
 import { hexToRgb01 } from "./pdfColor";
 import { PdfExportPreview } from "./PdfExportPreview";
+import {
+  Type,
+  ZoomIn,
+  ZoomOut,
+  FileDown,
+  Upload,
+  ChevronRight,
+  Trash2,
+} from "lucide-react";
 
 function rgbToHex(r: number, g: number, b: number): string {
   const to = (n: number) => n.toString(16).padStart(2, "0");
@@ -396,6 +405,7 @@ export default function PdfEditor() {
   const [replaceFind, setReplaceFind] = useState<string>("");
   const [replaceWith, setReplaceWith] = useState<string>("");
   const [replaceAllInSelection, setReplaceAllInSelection] = useState<boolean>(false);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -517,6 +527,7 @@ export default function PdfEditor() {
       return { ...prev, [box.key]: next };
     });
     setActiveKey(box.key);
+    setInspectorOpen(true);
     setReplaceFind("");
     setReplaceWith("");
   };
@@ -645,7 +656,7 @@ export default function PdfEditor() {
   };
 
   return (
-    <div className="w-full">
+    <div className="flex h-screen w-full flex-col overflow-hidden">
       {/* Hidden file input (Sejda-style button triggers this) */}
       <input
         ref={fileInputRef}
@@ -717,46 +728,63 @@ export default function PdfEditor() {
           </div>
         </section>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px]">
-          <section className="min-w-0">
-            <Card className="p-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
-                  Change PDF
-                </Button>
+        <>
+          {/* Top toolbar (Sejda-style) */}
+          <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4">
+            <Button variant="ghost" size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()}>
+              <Upload className="h-4 w-4" />
+              <span className="hidden sm:inline">Upload</span>
+            </Button>
 
-                <div className="ml-auto flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      setScale((s) =>
-                        clamp(Number((s - 0.1).toFixed(2)), 0.75, 2.2)
-                      )
-                    }
-                    disabled={!pdfProxy}
-                  >
-                    -
-                  </Button>
-                  <div className="min-w-[64px] text-center text-sm text-muted-foreground">
-                    {Math.round(scale * 100)}%
-                  </div>
-                  <Button
-                    variant="secondary"
-                    onClick={() =>
-                      setScale((s) =>
-                        clamp(Number((s + 0.1).toFixed(2)), 0.75, 2.2)
-                      )
-                    }
-                    disabled={!pdfProxy}
-                  >
-                    +
-                  </Button>
-                  <Button onClick={() => void exportPdf()} disabled={!pdfProxy || isLoading}>
-                    {isLoading ? "Working…" : "Export PDF"}
-                  </Button>
-                </div>
+            <Separator orientation="vertical" className="h-6" />
+
+            <Button variant="ghost" size="sm" className="gap-2">
+              <Type className="h-4 w-4" />
+              <span className="hidden sm:inline">Text</span>
+            </Button>
+
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setScale((s) => clamp(Number((s - 0.1).toFixed(2)), 0.75, 2.2))}
+                disabled={!pdfProxy}
+                aria-label="Zoom out"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <div className="min-w-[60px] text-center text-xs text-muted-foreground">
+                {Math.round(scale * 100)}%
               </div>
-            </Card>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setScale((s) => clamp(Number((s + 0.1).toFixed(2)), 0.75, 2.2))}
+                disabled={!pdfProxy}
+                aria-label="Zoom in"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+
+              <Separator orientation="vertical" className="mx-2 h-6" />
+
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-2"
+                onClick={() => void exportPdf()}
+                disabled={!pdfProxy || isLoading}
+              >
+                <FileDown className="h-4 w-4" />
+                {isLoading ? "Working…" : "Export"}
+              </Button>
+            </div>
+          </header>
+
+          {/* Workspace (grey bg + right inspector) */}
+          <div className="relative flex flex-1 overflow-hidden">
+            {/* PDF Canvas area (grey workspace) */}
+            <div className="flex-1 overflow-auto bg-muted/30 p-4">
 
           <Dialog
             open={previewOpen}
