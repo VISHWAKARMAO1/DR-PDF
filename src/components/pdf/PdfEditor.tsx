@@ -259,6 +259,7 @@ export default function PdfEditor() {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const pageViewportRef = useRef<Map<number, any>>(new Map());
 
   useEffect(() => {
     if (!pdfBytes) return;
@@ -389,12 +390,29 @@ export default function PdfEditor() {
 
     for (const edit of editList) {
       const page = doc.getPage(edit.pageNumber - 1);
-      const pageHeight = page.getHeight();
-      const pad = edit.padding ?? 2;
-      const xPdf = Math.max(0, edit.x - pad);
-      const yPdf = pageHeight - (edit.y + edit.height) - pad;
-      const wPdf = edit.width + pad * 2;
-      const hPdf = edit.height + pad * 2;
+      const vp = pageViewportRef.current.get(edit.pageNumber);
+      if (!vp?.convertToPdfPoint) {
+        // Fallback: skip if we don't have a viewport mapping yet.
+        continue;
+      }
+
+      // Convert from viewport (screen px) -> PDF points.
+      const p1 = vp.convertToPdfPoint(edit.x, edit.y);
+      const p2 = vp.convertToPdfPoint(edit.x + edit.width, edit.y + edit.height);
+      const x0 = Math.min(p1[0], p2[0]);
+      const y0 = Math.min(p1[1], p2[1]);
+      const w0 = Math.abs(p2[0] - p1[0]);
+      const h0 = Math.abs(p2[1] - p1[1]);
+
+      const scaleFactor: number = Number(vp.scale ?? 1) || 1;
+      const padPx = edit.padding ?? 2;
+      const padPdf = padPx / scaleFactor;
+      const fontSizePdf = edit.fontSize / scaleFactor;
+
+      const xPdf = Math.max(0, x0 - padPdf);
+      const yPdf = Math.max(0, y0 - padPdf);
+      const wPdf = w0 + padPdf * 2;
+      const hPdf = h0 + padPdf * 2;
       const { r, g, b } = hexToRgb01(edit.colorHex);
       const bg = hexToRgb01(edit.bgColorHex || "#ffffff");
 
@@ -408,9 +426,9 @@ export default function PdfEditor() {
       });
 
       page.drawText(edit.newText, {
-        x: edit.x,
-        y: yPdf + pad + Math.max(0, (edit.height - edit.fontSize) / 2),
-        size: edit.fontSize,
+        x: x0,
+        y: y0 + padPdf + Math.max(0, (h0 - fontSizePdf) / 2),
+        size: fontSizePdf,
         font,
         color: rgb(r, g, b),
       });
@@ -640,6 +658,9 @@ export default function PdfEditor() {
                 onMoveActive={(key, nextX, nextY) => updateEdit(key, { x: nextX, y: nextY })}
                 onEditText={(key, nextText) => updateEdit(key, { newText: nextText })}
                 onDoneEditing={() => setActiveKey(null)}
+                onViewport={(pageNum, vp) => {
+                  pageViewportRef.current.set(pageNum, vp);
+                }}
               />
             ))}
           </div>
@@ -789,8 +810,9 @@ function PdfPage(props: {
   onMoveActive: (key: string, nextX: number, nextY: number) => void;
   onEditText: (key: string, nextText: string) => void;
   onDoneEditing: () => void;
+  onViewport?: (pageNumber: number, viewport: any) => void;
 }) {
-  const { pdf, pageNumber, scale, edits, activeKey, onPickText, onMoveActive, onEditText, onDoneEditing } = props;
+  const { pdf, pageNumber, scale, edits, activeKey, onPickText, onMoveActive, onEditText, onDoneEditing, onViewport } = props;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [viewport, setViewport] = useState<any>(null);
   const [boxes, setBoxes] = useState<PdfTextItemBox[]>([]);
@@ -827,6 +849,7 @@ function PdfPage(props: {
         if (cancelled) return;
 
         setViewport(vp);
+        onViewport?.(pageNumber, vp);
         setBoxes(getItemBoxes(textContent, vp, pageNumber));
       } catch (e) {
         console.error(e);
