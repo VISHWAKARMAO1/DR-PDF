@@ -8,6 +8,14 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -75,6 +83,12 @@ function downloadBlob(blob: Blob, filename: string) {
 
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
+}
+
+function u8ToArrayBuffer(u8: Uint8Array): ArrayBuffer {
+  // pdf-lib types use ArrayBufferLike; in the browser this is backed by ArrayBuffer,
+  // but TS can complain. Create a real ArrayBuffer slice for Blob construction.
+  return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) as ArrayBuffer;
 }
 
 function splitIntoWordSpans(str: string): { word: string; start: number; end: number }[] {
@@ -155,7 +169,9 @@ function getItemBoxes(textContent: any, viewport: any, pageNumber: number): PdfT
 }
 
 export default function PdfEditor() {
-  const [pdfArrayBuffer, setPdfArrayBuffer] = useState<ArrayBuffer | null>(null);
+  // Keep PDF bytes as an immutable Uint8Array.
+  // (pdf.js can transfer/detach ArrayBuffers when using the worker, which breaks pdf-lib.)
+  const [pdfBytes, setPdfBytes] = useState<Uint8Array | null>(null);
   const [pdfProxy, setPdfProxy] = useState<any>(null);
   const [numPages, setNumPages] = useState(0);
   const [scale, setScale] = useState(1.35);
@@ -166,16 +182,21 @@ export default function PdfEditor() {
   const [replaceWith, setReplaceWith] = useState<string>("");
   const [replaceAllInSelection, setReplaceAllInSelection] = useState<boolean>(false);
 
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBlob, setPreviewBlob] = useState<Blob | null>(null);
+
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!pdfArrayBuffer) return;
+    if (!pdfBytes) return;
 
     let cancelled = false;
     setIsLoading(true);
     (async () => {
       try {
-        const loadingTask = pdfjsLib.getDocument({ data: pdfArrayBuffer });
+        // IMPORTANT: always pass a fresh copy to pdf.js so it can't detach our canonical buffer.
+        const loadingTask = pdfjsLib.getDocument({ data: pdfBytes.slice() });
         const doc = await loadingTask.promise;
         if (cancelled) return;
         setPdfProxy(doc);
@@ -195,15 +216,29 @@ export default function PdfEditor() {
     return () => {
       cancelled = true;
     };
-  }, [pdfArrayBuffer]);
+  }, [pdfBytes]);
+
+  useEffect(() => {
+    // Cleanup preview object URL
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
 
   const activeEdit = activeKey ? edits[activeKey] : null;
 
   const onUpload = async (file: File) => {
     const buf = await file.arrayBuffer();
+    const bytes = new Uint8Array(buf);
     setEdits({});
     setActiveKey(null);
-    setPdfArrayBuffer(buf);
+    setPdfBytes(bytes);
+    setPdfProxy(null);
+    setNumPages(0);
+    setPreviewOpen(false);
+    setPreviewBlob(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
   };
 
   const updateEdit = (key: string, partial: Partial<PdfTextEdit>) => {
@@ -251,59 +286,66 @@ export default function PdfEditor() {
     updateEdit(activeEdit.key, { newText: next });
   };
 
-  const exportPdf = async () => {
-    if (!pdfArrayBuffer || !pdfProxy) return;
+  const buildEditedPdfBytes = async (): Promise<Uint8Array> => {
+    if (!pdfBytes) throw new Error("No PDF loaded");
 
     const editList = Object.values(edits).filter((e) => e.newText !== e.originalText);
     if (editList.length === 0) {
       toast({ title: "Nothing to export", description: "Edit some text first." });
-      return;
+      throw new Error("Nothing to export");
     }
 
+    // IMPORTANT: pass a copy to pdf-lib as well.
+    const doc = await PDFDocument.load(pdfBytes.slice());
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+
+    for (const edit of editList) {
+      const page = doc.getPage(edit.pageNumber - 1);
+      const pageHeight = page.getHeight();
+      const pad = edit.padding ?? 2;
+      const xPdf = Math.max(0, edit.x - pad);
+      const yPdf = pageHeight - (edit.y + edit.height) - pad;
+      const wPdf = edit.width + pad * 2;
+      const hPdf = edit.height + pad * 2;
+      const { r, g, b } = hexToRgb01(edit.colorHex);
+      const bg = hexToRgb01(edit.bgColorHex || "#ffffff");
+
+      page.drawRectangle({
+        x: xPdf,
+        y: yPdf,
+        width: wPdf,
+        height: hPdf,
+        color: rgb(bg.r, bg.g, bg.b),
+      });
+
+      page.drawText(edit.newText, {
+        x: edit.x,
+        y: yPdf + pad + Math.max(0, (edit.height - edit.fontSize) / 2),
+        size: edit.fontSize,
+        font,
+        color: rgb(r, g, b),
+      });
+    }
+
+    const out = await doc.save();
+    return out instanceof Uint8Array ? out : new Uint8Array(out);
+  };
+
+  const exportPdf = async () => {
+    if (!pdfBytes || !pdfProxy) return;
     try {
       setIsLoading(true);
-      const doc = await PDFDocument.load(pdfArrayBuffer);
-      const font = await doc.embedFont(StandardFonts.Helvetica);
+      const outBytes = await buildEditedPdfBytes();
+      const blob = new Blob([u8ToArrayBuffer(outBytes)], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
 
-      for (const edit of editList) {
-        const page = doc.getPage(edit.pageNumber - 1);
-        const pageHeight = page.getHeight();
-        const pad = edit.padding ?? 2;
-        const xPdf = Math.max(0, edit.x - pad);
-        const yPdf = pageHeight - (edit.y + edit.height) - pad;
-        const wPdf = edit.width + pad * 2;
-        const hPdf = edit.height + pad * 2;
-        const { r, g, b } = hexToRgb01(edit.colorHex);
-        const bg = hexToRgb01(edit.bgColorHex || "#ffffff");
-
-        // Heuristic: cover original text by painting a white rectangle.
-        // Works best on standard PDFs with white page background.
-        page.drawRectangle({
-          x: xPdf,
-          y: yPdf,
-          width: wPdf,
-          height: hPdf,
-          color: rgb(bg.r, bg.g, bg.b),
-        });
-
-        page.drawText(edit.newText, {
-          x: edit.x,
-          y: yPdf + pad + Math.max(0, (edit.height - edit.fontSize) / 2),
-          size: edit.fontSize,
-          font,
-          color: rgb(r, g, b),
-        });
-      }
-
-      const bytes = await doc.save();
-      // Ensure we hand Blob a Uint8Array backed by a real ArrayBuffer.
-      const safeBytes = new Uint8Array(bytes);
-      downloadBlob(
-        new Blob([safeBytes], { type: "application/pdf" }),
-        "edited.pdf"
-      );
-      toast({ title: "Exported", description: "Downloaded edited.pdf" });
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPreviewBlob(blob);
+      setPreviewUrl(url);
+      setPreviewOpen(true);
     } catch (e) {
+      // buildEditedPdfBytes already toasted for "Nothing to export"
+      if ((e as Error)?.message === "Nothing to export") return;
       console.error(e);
       toast({
         title: "Export failed",
@@ -371,6 +413,61 @@ export default function PdfEditor() {
               </div>
             </div>
           </Card>
+
+          <Dialog
+            open={previewOpen}
+            onOpenChange={(open) => {
+              setPreviewOpen(open);
+              if (!open) {
+                setPreviewBlob(null);
+                if (previewUrl) URL.revokeObjectURL(previewUrl);
+                setPreviewUrl(null);
+              }
+            }}
+          >
+            <DialogContent className="max-w-5xl">
+              <DialogHeader>
+                <DialogTitle>Preview export</DialogTitle>
+                <DialogDescription>
+                  Confirm the edited PDF, then download.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="h-[70vh] w-full overflow-hidden rounded-md border border-border">
+                {previewUrl ? (
+                  <iframe
+                    title="Edited PDF preview"
+                    src={previewUrl}
+                    className="h-full w-full"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-muted-foreground">
+                    Generating preview…
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="secondary"
+                  onClick={() => setPreviewOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (!previewBlob) return;
+                    downloadBlob(previewBlob, "edited.pdf");
+                    setPreviewOpen(false);
+                    toast({ title: "Exported", description: "Downloaded edited.pdf" });
+                  }}
+                  disabled={!previewBlob}
+                >
+                  Download PDF
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           <div
             ref={containerRef}
