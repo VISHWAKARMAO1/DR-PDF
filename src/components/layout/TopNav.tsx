@@ -33,6 +33,12 @@ export function TopNav({ variant = "home", rightSlot }: TopNavProps) {
               <NavLink to="/editor" className="hover:text-foreground" activeClassName="text-foreground">
                 Edit
               </NavLink>
+              <NavLink to="/watermark" className="hover:text-foreground" activeClassName="text-foreground">
+                Watermark
+              </NavLink>
+              <NavLink to="/ocr" className="hover:text-foreground" activeClassName="text-foreground">
+                OCR
+              </NavLink>
               <a className="hover:text-foreground" href="#tools">
                 All Tools
               </a>
