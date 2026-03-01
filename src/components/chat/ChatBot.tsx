@@ -35,6 +35,12 @@ interface PdfContext {
 const NVIDIA_API_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 const MODEL = "meta/llama-4-maverick-17b-128e-instruct";
 const API_KEY = import.meta.env.VITE_NVIDIA_API_KEY as string | undefined;
+const USE_PROXY = import.meta.env.VITE_USE_PROXY === "true";
+// Runtime diagnostic: log whether a key is present (do NOT print the full key).
+try {
+  // eslint-disable-next-line no-console
+  console.debug("[ChatBot] NVIDIA API key present:", Boolean(API_KEY));
+} catch {}
 const MAX_PDF_CHARS = 12_000; // trim PDF context to avoid token overflow
 
 const SYSTEM_PROMPT = `You are Dr. PDF Pro AI – a friendly, expert PDF assistant embedded in Dr. PDF Pro, a browser-based PDF toolkit.
@@ -80,30 +86,44 @@ async function extractPdfText(file: File): Promise<{ text: string; pages: number
 async function* callNvidiaStream(
   messages: { role: string; content: string }[]
 ): AsyncGenerator<string> {
-  if (!API_KEY) {
+  if (!USE_PROXY && !API_KEY) {
     yield "⚠️ **No API key configured.**\n\nTo enable the AI assistant, add your NVIDIA API key to the project's `.env` file:\n\n```\nVITE_NVIDIA_API_KEY=your_key_here\n```\n\nGet a free key at [build.nvidia.com](https://build.nvidia.com).";
     return;
   }
 
-  const res = await fetch(NVIDIA_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_KEY}`,
-      Accept: "text/event-stream",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      max_tokens: 1024,
-      temperature: 0.7,
-      top_p: 0.95,
-      stream: true,
-    }),
-  });
+  const endpoint = USE_PROXY ? "/api/ai" : NVIDIA_API_URL;
+
+  let res: Response;
+  try {
+    res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(USE_PROXY ? {} : { Authorization: `Bearer ${API_KEY}` }),
+        Accept: "text/event-stream",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: 1024,
+        temperature: 0.7,
+        top_p: 0.95,
+        stream: true,
+      }),
+    });
+  } catch (networkErr: any) {
+    // Typical causes: CORS preflight failure, network blocked, or DNS issue.
+    // Surface a helpful message and log details to the console for debugging.
+    // eslint-disable-next-line no-console
+    console.error("[ChatBot] Network error while calling NVIDIA API:", networkErr);
+    yield "❌ Network error connecting to AI – this may be a CORS/preflight issue or network block. Check the browser console and network tab for details.";
+    return;
+  }
 
   if (!res.ok) {
     const err = await res.text().catch(() => res.statusText);
+    // eslint-disable-next-line no-console
+    console.error(`[ChatBot] NVIDIA API responded ${res.status}:`, err);
     yield `❌ API error ${res.status}: ${err}`;
     return;
   }

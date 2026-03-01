@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ChatBot } from "@/components/chat/ChatBot";
 
 /* ── Public pages ─────────────────────── */
 import Index from "./pages/Index";
@@ -84,8 +83,7 @@ const App = () => (
             <Route path="*"               element={<NotFound />} />
           </Routes>
 
-          {/* AI assistant – rendered only when user is logged in (ChatBot handles this internally) */}
-          <ChatBot />
+          {/* Chatbot removed */}
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
