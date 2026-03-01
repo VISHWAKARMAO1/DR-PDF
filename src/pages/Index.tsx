@@ -1,14 +1,19 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import { TopNav } from "@/components/layout/TopNav";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { gsap } from "gsap";
 import { ArrowRight, ShieldCheck, WandSparkles } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const imageFallback = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c3aed'/%3E%3Cstop offset='100%25' stop-color='%230ea5e9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='800' fill='url(%23g)'/%3E%3Ctext x='50%25' y='50%25' fill='white' font-size='54' font-family='Arial, Helvetica, sans-serif' text-anchor='middle' dominant-baseline='middle'%3EDr PDF Pro%3C/text%3E%3C/svg%3E";
 
 const Index = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const toolsHref = user ? "/tools" : "/register";
   const heroRef = useRef<HTMLElement | null>(null);
   const gradientRef = useRef<HTMLDivElement | null>(null);
 
@@ -67,11 +72,9 @@ const Index = () => {
               </p>
 
               <div className="home-reveal mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button asChild size="lg" className="gap-2 px-8 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-lg hover:shadow-xl transition-shadow">
-                  <NavLink to="/tools" activeClassName="">
-                    Open All Tools
-                    <ArrowRight className="h-4 w-4" />
-                  </NavLink>
+                <Button size="lg" className="gap-2 px-8 bg-gradient-to-r from-primary to-sky-500 text-primary-foreground shadow-lg hover:shadow-xl transition-shadow" onClick={() => navigate(toolsHref)}>
+                  {user ? "Open All Tools" : "Get Started Free"}
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
                 <Button asChild size="lg" variant="outline" className="px-8">
                   <NavLink to="/about" activeClassName="">Learn More</NavLink>
@@ -162,7 +165,7 @@ const Index = () => {
         <section className="pb-16">
           <div className="container mx-auto max-w-6xl px-4">
             <Card className="home-reveal relative overflow-hidden rounded-3xl border border-border/70 bg-card/85 px-6 py-10 md:px-10">
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-purple-500/15" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-sky-500/15" />
               <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
                 <div>
                   <h3 className="text-2xl font-bold tracking-tight md:text-3xl">Start your next PDF task now</h3>
@@ -170,11 +173,9 @@ const Index = () => {
                     Open the full toolset and choose the exact workflow you need.
                   </p>
                 </div>
-                <Button asChild size="lg" className="gap-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
-                  <NavLink to="/tools" activeClassName="">
-                    Launch Tools
-                    <ArrowRight className="h-4 w-4" />
-                  </NavLink>
+                <Button size="lg" className="gap-2 bg-gradient-to-r from-primary to-sky-500 text-primary-foreground" onClick={() => navigate(toolsHref)}>
+                  {user ? "Launch Tools" : "Get Started Free"}
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
             </Card>
@@ -188,8 +189,8 @@ const Index = () => {
               <p className="mt-2 max-w-md text-sm text-muted-foreground">
                 Professional PDF workspace for editing, organizing, securing, and exporting files with a clean web-first workflow.
               </p>
-              <Button asChild className="mt-5 gap-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
-                <NavLink to="/tools" activeClassName="">
+              <Button asChild className="mt-5 gap-2 bg-gradient-to-r from-primary to-sky-500 text-primary-foreground">
+                <NavLink to={toolsHref} activeClassName="">
                   Open Tools
                   <ArrowRight className="h-4 w-4" />
                 </NavLink>

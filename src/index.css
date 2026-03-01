@@ -3,72 +3,77 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light mode ─────────────────────────────────────── */
   :root {
-    --background: 220 14.3% 95.9%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 200 30% 97%;
+    --foreground: 210 40% 8%;
 
     --card: 0 0% 100%;
-    --card-foreground: 224 71.4% 4.1%;
+    --card-foreground: 210 40% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
+    --popover-foreground: 210 40% 8%;
 
-    --primary: 260 100% 50%;
-    --primary-foreground: 210 20% 98%;
+    /* Ocean blue as primary in light mode */
+    --primary: 200 100% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14.3% 95.9%;
-    --secondary-foreground: 220.9 39.3% 11%;
+    --secondary: 200 20% 94%;
+    --secondary-foreground: 210 40% 12%;
 
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
+    --muted: 200 20% 94%;
+    --muted-foreground: 207 20% 46%;
 
-    --accent: 220 14.3% 95.9%;
-    --accent-foreground: 220.9 39.3% 11%;
+    --accent: 200 20% 94%;
+    --accent-foreground: 210 40% 12%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 224 71.4% 4.1%;
+    --border: 200 20% 88%;
+    --input: 200 20% 88%;
+    --ring: 200 100% 38%;
 
     --radius: 1rem;
-    
-    --glass-bg: 210 20% 98%;
-    --glass-border: 210 20% 90%;
+
+    --glass-bg: 200 30% 97%;
+    --glass-border: 200 20% 88%;
   }
 
+  /* ── Dark mode — neon green + deep ocean blue ──────── */
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
+    /* Near-black with a deep ocean blue tint */
+    --background: 212 55% 5%;
+    --foreground: 185 20% 94%;
 
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
+    --card: 212 50% 7%;
+    --card-foreground: 185 20% 94%;
 
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 212 50% 7%;
+    --popover-foreground: 185 20% 94%;
 
-    --primary: 260 100% 55%;
-    --primary-foreground: 220.9 39.3% 11%;
+    /* Neon green primary */
+    --primary: 155 100% 48%;
+    --primary-foreground: 212 55% 5%;
 
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 210 40% 14%;
+    --secondary-foreground: 185 20% 94%;
 
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
+    --muted: 210 40% 12%;
+    --muted-foreground: 200 20% 55%;
 
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
+    --accent: 210 40% 14%;
+    --accent-foreground: 185 20% 94%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 40%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
-    
-    --glass-bg: 224 71.4% 4.1%;
-    --glass-border: 215 27.9% 16.9%;
+    --border: 205 35% 16%;
+    --input: 205 35% 16%;
+    --ring: 155 100% 48%;
+
+    --glass-bg: 212 55% 5%;
+    --glass-border: 205 35% 16%;
   }
 }
 
@@ -79,8 +84,32 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at top left, hsl(240, 100%, 50%, 0.1), transparent 40%),
-                      radial-gradient(circle at bottom right, hsl(300, 100%, 50%, 0.1), transparent 40%);
+  }
+
+  /* Light mode ambient glow */
+  body:not(.dark) {
+    background-image:
+      radial-gradient(ellipse at top left, hsl(200 100% 38% / 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(155 100% 48% / 0.06), transparent 50%);
+  }
+
+  /* Dark mode — neon green top-left, ocean blue bottom-right */
+  .dark body {
+    background-image:
+      radial-gradient(ellipse at top left, hsl(155 100% 48% / 0.12), transparent 45%),
+      radial-gradient(ellipse at bottom right, hsl(200 100% 50% / 0.10), transparent 45%),
+      radial-gradient(ellipse at center, hsl(210 100% 40% / 0.04), transparent 70%);
+  }
+
+  /* Custom scrollbar in dark mode */
+  .dark ::-webkit-scrollbar { width: 6px; height: 6px; }
+  .dark ::-webkit-scrollbar-track { background: hsl(212 55% 5%); }
+  .dark ::-webkit-scrollbar-thumb {
+    background: hsl(155 100% 48% / 0.35);
+    border-radius: 99px;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: hsl(155 100% 48% / 0.6);
   }
 }
 
@@ -89,8 +118,16 @@
     @apply backdrop-blur-lg bg-[hsl(var(--glass-bg)/0.5)] border border-[hsl(var(--glass-border)/0.5)] shadow-2xl shadow-primary/5;
   }
 
+  /* Neon green → sky blue → ocean blue gradient */
   .brand-gradient-bg {
-    @apply bg-gradient-to-r from-primary via-purple-500 to-cyan-400 bg-[length:200%_200%];
+    background: linear-gradient(
+      135deg,
+      hsl(155, 100%, 48%),
+      hsl(180, 100%, 50%),
+      hsl(200, 100%, 50%),
+      hsl(210, 100%, 55%)
+    );
+    background-size: 300% 300%;
   }
 
   .brand-gradient-text {
@@ -99,6 +136,15 @@
 
   .brand-gradient-animate {
     animation: brand-gradient-shift 8s ease-in-out infinite;
+  }
+
+  /* Neon glow utility */
+  .neon-glow {
+    box-shadow: 0 0 16px hsl(155 100% 48% / 0.4), 0 0 32px hsl(155 100% 48% / 0.15);
+  }
+
+  .neon-glow-text {
+    text-shadow: 0 0 12px hsl(155 100% 48% / 0.7), 0 0 24px hsl(155 100% 48% / 0.3);
   }
 
   .scrollbar-hide {
@@ -112,13 +158,33 @@
 }
 
 @keyframes brand-gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
+
+/* Typing animation for chatbot */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.typing-cursor::after {
+  content: "▋";
+  animation: blink 0.8s step-start infinite;
+  font-size: 0.85em;
+  margin-left: 1px;
+}
+
+/* ── Safe-area / notch utilities ───────────────────────────────────── */
+.pb-safe   { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.pt-safe   { padding-top:    env(safe-area-inset-top, 0px); }
+.pl-safe   { padding-left:   env(safe-area-inset-left, 0px); }
+.pr-safe   { padding-right:  env(safe-area-inset-right, 0px); }
+.mb-safe   { margin-bottom:  env(safe-area-inset-bottom, 0px); }
+
+/* ── Minimum touch-target helper ───────────────────────────────────── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+

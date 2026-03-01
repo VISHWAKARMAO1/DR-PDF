@@ -20,7 +20,7 @@ const NotFound = () => {
       <main className="flex flex-1 items-center justify-center px-4 pt-24 pb-16">
         <div className="relative mx-auto w-full max-w-lg overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-10 text-center">
           {/* Background gradient */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/10" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-sky-500/10" />
 
           {/* 404 display */}
           <div className="relative">
@@ -47,7 +47,7 @@ const NotFound = () => {
               </Button>
               <Button
                 asChild
-                className="gap-2 w-full sm:w-auto bg-gradient-to-r from-primary to-purple-600 text-primary-foreground"
+                className="gap-2 w-full sm:w-auto bg-gradient-to-r from-primary to-sky-500 text-primary-foreground"
               >
                 <NavLink to="/" activeClassName="">
                   <Home className="h-4 w-4" />

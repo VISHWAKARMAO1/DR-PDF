@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 interface PageHeaderProps {
   title: string;
   description: string;
-  /** Gradient colors for the decorative overlay, e.g. "from-primary/15 ... to-purple-500/15" */
+  /** Gradient colors for the decorative overlay, e.g. "from-primary/15 ... to-sky-500/15" */
   gradientFrom?: string;
   gradientTo?: string;
   icon?: LucideIcon;
@@ -19,7 +19,7 @@ export function PageHeader({
   title,
   description,
   gradientFrom = "from-primary/15",
-  gradientTo = "to-purple-500/15",
+  gradientTo = "to-sky-500/15",
   icon: Icon,
   backTo = "/tools",
   backLabel = "All Tools",

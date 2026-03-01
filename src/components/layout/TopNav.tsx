@@ -3,7 +3,17 @@ import { useTheme } from "next-themes";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu, Moon, Sun, X } from "lucide-react";
+import { LogOut, Menu, Moon, Sun, User, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type TopNavProps = {
   variant?: "home" | "editor";
@@ -19,12 +29,24 @@ const navLinks = [
 
 export function TopNav({ variant = "home", rightSlot }: TopNavProps) {
   const { theme, setTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => setMounted(true), []);
 
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/", { replace: true });
+  };
+
+  /* Avatar initials helper */
+  const initials = user?.displayName
+    ? user.displayName.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : user?.email?.[0].toUpperCase() ?? "U";
 
   return (
     <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[95vw] max-w-6xl z-50 rounded-2xl border border-border/40 bg-background/35 backdrop-blur-xl shadow-2xl shadow-primary/10">
@@ -73,16 +95,54 @@ export function TopNav({ variant = "home", rightSlot }: TopNavProps) {
             </Button>
           )}
 
-          {/* CTA — desktop only */}
-          <Button
-            asChild
-            size="sm"
-            className="hidden sm:inline-flex bg-gradient-to-r from-primary to-purple-600 text-primary-foreground shadow-lg hover:shadow-xl transition-shadow"
-          >
-            <NavLink to="/tools" activeClassName="">
-              Get Started
-            </NavLink>
-          </Button>
+          {user ? (
+            /* ── Authenticated: user avatar dropdown ── */
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-primary/40 bg-primary/10 text-xs font-bold text-primary ring-offset-background transition-all hover:ring-2 hover:ring-primary/50 hover:ring-offset-2 focus-visible:outline-none"
+                  aria-label="User menu"
+                >
+                  {user.photoURL
+                    ? <img src={user.photoURL} alt="" className="h-9 w-9 rounded-full object-cover" referrerPolicy="no-referrer" />
+                    : initials}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuLabel className="flex flex-col gap-0.5">
+                  <span className="text-sm font-semibold truncate">{user.displayName ?? "User"}</span>
+                  <span className="text-xs font-normal text-muted-foreground truncate">{user.email}</span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <NavLink to="/tools" activeClassName="" className="flex w-full cursor-pointer items-center gap-2">
+                    <User className="h-4 w-4" /> My Tools
+                  </NavLink>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" /> Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            /* ── Unauthenticated: Sign In + Get Started ── */
+            <>
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex text-sm">
+                <NavLink to="/login" activeClassName="">Sign In</NavLink>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="hidden sm:inline-flex bg-gradient-to-r from-primary to-sky-500 text-primary-foreground shadow-lg hover:shadow-xl transition-shadow"
+              >
+                <NavLink to="/register" activeClassName="">Get Started</NavLink>
+              </Button>
+            </>
+          )}
 
           {/* Hamburger — mobile only */}
           <Button
@@ -117,14 +177,33 @@ export function TopNav({ variant = "home", rightSlot }: TopNavProps) {
               {link.label}
             </NavLink>
           ))}
-          <NavLink
-            to="/tools"
-            onClick={() => setMobileOpen(false)}
-            className="mt-2 inline-block rounded-xl px-3 py-2.5 text-center text-sm font-medium text-primary-foreground bg-gradient-to-r from-primary to-purple-600"
-            activeClassName=""
-          >
-            Get Started
-          </NavLink>
+          {user ? (
+            <button
+              onClick={() => { setMobileOpen(false); handleLogout(); }}
+              className="mt-2 flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-destructive hover:bg-accent"
+            >
+              <LogOut className="h-4 w-4" /> Sign Out
+            </button>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="mt-2 inline-block rounded-xl px-3 py-2.5 text-center text-sm font-medium border border-border/50 text-foreground hover:bg-accent"
+                activeClassName=""
+              >
+                Sign In
+              </NavLink>
+              <NavLink
+                to="/register"
+                onClick={() => setMobileOpen(false)}
+                className="mt-1 inline-block rounded-xl px-3 py-2.5 text-center text-sm font-medium text-primary-foreground bg-gradient-to-r from-primary to-sky-500"
+                activeClassName=""
+              >
+                Get Started
+              </NavLink>
+            </>
+          )}
         </nav>
       </div>
     </header>

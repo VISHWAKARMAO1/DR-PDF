@@ -13,7 +13,7 @@ const Contact: React.FC = () => {
       <TopNav />
       <main className="container mx-auto max-w-6xl px-4 py-16 md:py-24">
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-8 text-center md:p-12">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-purple-500/15" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-sky-500/15" />
           <h1 className="relative text-5xl font-extrabold tracking-tight md:text-7xl">Contact</h1>
           <p className="mt-6 text-lg text-muted-foreground md:text-xl">
             Have questions, feedback, or partnership inquiries? Reach out anytime.
@@ -74,7 +74,7 @@ const Contact: React.FC = () => {
                 <Textarea id="message" placeholder="Write your message..." className="min-h-36" />
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
+              <Button type="submit" className="w-full bg-gradient-to-r from-primary to-sky-500 text-primary-foreground">
                 Send message
               </Button>
             </form>

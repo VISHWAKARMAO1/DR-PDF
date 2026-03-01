@@ -48,7 +48,7 @@ const About: React.FC = () => {
       <TopNav />
       <main className="container mx-auto max-w-6xl px-4 py-16 md:py-24">
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-8 text-center md:p-12">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-purple-500/15" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-sky-500/15" />
           <h1 className="relative text-5xl font-extrabold tracking-tight md:text-7xl">
             About Dr. PDF Pro
           </h1>
@@ -88,7 +88,7 @@ const About: React.FC = () => {
             <p className="mt-3 text-sm text-muted-foreground">
               Product-focused development with emphasis on usable UX and reliable PDF operations.
             </p>
-            <Button asChild className="mt-6 w-full gap-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
+            <Button asChild className="mt-6 w-full gap-2 bg-gradient-to-r from-primary to-sky-500 text-primary-foreground">
               <NavLink to="/contact" activeClassName="">
                 Contact
                 <ArrowRight className="h-4 w-4" />

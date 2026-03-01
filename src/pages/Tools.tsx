@@ -19,6 +19,10 @@ import {
   Lock,
   LockOpen,
   ScanText,
+  Scissors,
+  RotateCw,
+  Hash,
+  FileCheck,
   ArrowUpRight,
   Search,
   X,
@@ -155,6 +159,42 @@ const tools: Tool[] = [
     gradient: "from-teal-500/20 via-teal-500/5 to-transparent",
     iconBg: "bg-teal-500/15 text-teal-500 border-teal-500/30",
   },
+  {
+    name: "Split PDF",
+    description: "Divide a PDF into multiple files using custom page ranges.",
+    to: "/split",
+    icon: Scissors,
+    category: "Organize",
+    gradient: "from-orange-500/20 via-orange-500/5 to-transparent",
+    iconBg: "bg-orange-500/15 text-orange-500 border-orange-500/30",
+  },
+  {
+    name: "Rotate Pages",
+    description: "Rotate all or individual pages by 90°, 180°, or 270°.",
+    to: "/rotate",
+    icon: RotateCw,
+    category: "Organize",
+    gradient: "from-lime-500/20 via-lime-500/5 to-transparent",
+    iconBg: "bg-lime-500/15 text-lime-600 border-lime-500/30",
+  },
+  {
+    name: "Add Page Numbers",
+    description: "Stamp sequential page numbers at any position on the page.",
+    to: "/page-numbers",
+    icon: Hash,
+    category: "Edit",
+    gradient: "from-yellow-500/20 via-yellow-500/5 to-transparent",
+    iconBg: "bg-yellow-500/15 text-yellow-600 border-yellow-500/30",
+  },
+  {
+    name: "Flatten PDF",
+    description: "Bake form fields into pages and normalize the PDF structure.",
+    to: "/flatten",
+    icon: FileCheck,
+    category: "Edit",
+    gradient: "from-primary/20 via-primary/5 to-transparent",
+    iconBg: "bg-primary/15 text-primary border-primary/30",
+  },
 ];
 
 const categories: Category[] = ["Edit", "Organize", "Extract", "Security"];
@@ -188,7 +228,7 @@ export default function Tools() {
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-6 px-4 pb-12">
         {/* Hero header */}
         <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/70 px-6 py-7 sm:px-8">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-purple-500/15" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-sky-500/15" />
           <h1 className="relative text-2xl font-semibold tracking-tight">All Tools</h1>
           <p className="relative mt-1 text-sm text-muted-foreground">
             {tools.length} PDF tools, all browser-based. No installation needed.
@@ -303,7 +343,7 @@ export default function Tools() {
                       asChild
                       variant="outline"
                       size="sm"
-                      className="w-full gap-1.5 border-border/60 bg-background/60 text-foreground transition-all hover:bg-gradient-to-r hover:from-primary hover:to-purple-600 hover:text-primary-foreground hover:border-transparent"
+                      className="w-full gap-1.5 border-border/60 bg-background/60 text-foreground transition-all hover:bg-gradient-to-r hover:from-primary hover:to-sky-500 hover:text-primary-foreground hover:border-transparent"
                     >
                       <NavLink to={tool.to} activeClassName="">
                         Open Tool
