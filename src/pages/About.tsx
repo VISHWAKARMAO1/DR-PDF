@@ -2,93 +2,138 @@
 import React from "react";
 import { TopNav } from "@/components/layout/TopNav";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NavLink } from "@/components/NavLink";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Github, Linkedin, Instagram, Sparkles, Target, Users } from "lucide-react";
 
-const teamMembers = [
+const principles = [
   {
-    name: "Jane Doe",
-    role: "Lead Developer",
-    avatar: "https://github.com/shadcn.png",
-    bio: "Jane is a passionate developer with a love for creating intuitive and powerful user experiences.",
+    title: "Clarity first",
+    text: "Every screen is designed to reduce friction so tasks are completed with less effort.",
+    icon: Sparkles,
   },
   {
-    name: "John Smith",
-    role: "UX/UI Designer",
-    avatar: "https://github.com/shadcn.png",
-    bio: "John has a keen eye for design and is dedicated to making our tools beautiful and easy to use.",
+    title: "Practical workflows",
+    text: "Tools focus on real document actions users perform daily: edit, merge, extract, protect, and more.",
+    icon: Target,
   },
   {
-    name: "Peter Jones",
-    role: "Backend Engineer",
-    avatar: "https://github.com/shadcn.png",
-    bio: "Peter ensures that our application is fast, reliable, and secure.",
+    title: "Built for users",
+    text: "Fast interactions, consistent UI, and clear outcomes help people stay productive.",
+    icon: Users,
+  },
+];
+
+const socialLinks = [
+  {
+    label: "GitHub",
+    href: "https://github.com/VISHWAKARMAO1",
+    icon: Github,
+  },
+  {
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/ankit-vishwakarma",
+    icon: Linkedin,
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/",
+    icon: Instagram,
   },
 ];
 
 const About: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background text-foreground pt-28">
+    <div className="min-h-screen bg-background text-foreground pt-24">
       <TopNav />
       <main className="container mx-auto max-w-6xl px-4 py-16 md:py-24">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-5xl font-extrabold tracking-tight md:text-7xl">
+        <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/70 bg-card/80 p-8 text-center md:p-12">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/15 via-transparent to-purple-500/15" />
+          <h1 className="relative text-5xl font-extrabold tracking-tight md:text-7xl">
             About Dr. PDF Pro
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-            We are a team of passionate developers dedicated to creating the best tools to help you with your PDF needs. Our mission is to provide easy-to-use, reliable, and powerful utilities to make your life easier.
+          <p className="relative mt-6 text-lg text-muted-foreground md:text-xl">
+            Dr. PDF Pro is a modern PDF toolkit focused on speed, simplicity, and dependable document workflows.
           </p>
         </div>
 
-        <section className="mt-24">
-          <h2 className="text-center text-4xl font-bold tracking-tight">Our Team</h2>
-          <div className="mt-12 grid gap-10 md:grid-cols-3">
-            {teamMembers.map((member) => (
-              <Card key={member.name} className="glass p-8 text-center rounded-2xl transform hover:-translate-y-2 transition-transform">
-                <Avatar className="mx-auto h-32 w-32 border-4 border-primary/10">
-                  <AvatarImage src={member.avatar} alt={member.name} />
-                  <AvatarFallback>
-                    {member.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <h3 className="mt-6 text-2xl font-semibold">{member.name}</h3>
-                <p className="text-md text-primary font-semibold">{member.role}</p>
-                <p className="mt-4 text-muted-foreground">{member.bio}</p>
+        <section className="mt-12 grid gap-6 md:grid-cols-3">
+          {principles.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Card key={item.title} className="rounded-2xl border-border/70 bg-card/80 p-6">
+                <Icon className="h-5 w-5 text-primary" />
+                <h2 className="mt-4 text-lg font-semibold">{item.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
               </Card>
-            ))}
-          </div>
+            );
+          })}
         </section>
 
-        <section className="mt-24 text-center glass p-16 rounded-2xl">
-           <h2 className="text-4xl font-bold tracking-tight">Our Mission</h2>
-           <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground">
-            To empower users with simple, effective, and accessible tools for managing their documents. We believe that working with PDFs should be a seamless and productive experience, not a frustrating one.
-          </p>
+        <section className="mt-10 grid gap-6 lg:grid-cols-5">
+          <Card className="lg:col-span-3 rounded-2xl border-border/70 bg-card/80 p-7">
+            <h2 className="text-2xl font-bold tracking-tight">Our Mission</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">
+              We build focused PDF tools that remove complexity from document work. Instead of juggling multiple apps,
+              users can complete core tasks in one clear interface.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">
+              The product direction stays practical: fewer distractions, stronger outcomes, and faster results.
+            </p>
+          </Card>
+
+          <Card className="lg:col-span-2 rounded-2xl border-border/70 bg-card/80 p-7">
+            <h3 className="text-lg font-semibold">Built by</h3>
+            <p className="mt-2 text-2xl font-bold brand-gradient-text brand-gradient-animate">Ankit Vishwakarma</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Product-focused development with emphasis on usable UX and reliable PDF operations.
+            </p>
+            <Button asChild className="mt-6 w-full gap-2 bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
+              <NavLink to="/contact" activeClassName="">
+                Contact
+                <ArrowRight className="h-4 w-4" />
+              </NavLink>
+            </Button>
+          </Card>
         </section>
 
-        <section className="mt-24 text-center">
-          <h2 className="text-4xl font-bold tracking-tight">Contact Us</h2>
-          <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground">
-            Have questions or feedback? We'd love to hear from you.
-          </p>
-          <div className="mt-8">
-            <p className="text-lg">
-              <strong>Name:</strong> [Your Name]
-            </p>
-            <p className="text-lg">
-              <strong>Email:</strong> [Your Email]
-            </p>
-            <p className="text-lg">
-              <strong>GitHub:</strong> [Your GitHub Profile]
-            </p>
-             <p className="text-lg">
-              <strong>LinkedIn:</strong> [Your LinkedIn Profile]
-            </p>
-          </div>
+        <section className="mt-10">
+          <Card className="rounded-2xl border-border/70 bg-card/80 p-7 md:p-10">
+            <h2 className="text-2xl font-bold tracking-tight">What you get</h2>
+            <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
+              <p>• One place for all key PDF actions</p>
+              <p>• Consistent interaction patterns across tools</p>
+              <p>• Fast, browser-based workflows</p>
+              <p>• Clear export and file management outcomes</p>
+            </div>
+          </Card>
         </section>
 
+        <section className="mt-10">
+          <Card className="rounded-2xl border-border/70 bg-card/80 p-7 md:p-10">
+            <h2 className="text-2xl font-bold tracking-tight">Social</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Follow updates, projects, and product progress.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              {socialLinks.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-border/70 bg-background/70 px-4 py-3 text-sm font-medium transition-colors hover:bg-muted"
+                  >
+                    <Icon className="h-4 w-4 text-primary" />
+                    {item.label}
+                  </a>
+                );
+              })}
+            </div>
+          </Card>
+        </section>
       </main>
     </div>
   );

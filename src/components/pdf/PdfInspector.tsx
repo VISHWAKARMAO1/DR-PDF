@@ -65,7 +65,7 @@ export function PdfInspector(props: PdfInspectorProps) {
           </div>
 
           {/* Inspector content */}
-          <div className="flex-1 overflow-auto p-3">
+          <div className="flex-1 overflow-auto scrollbar-hide p-3">
             {!activeEdit ? (
               <div className="text-center text-sm text-muted-foreground">
                 Click any word to edit

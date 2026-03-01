@@ -18,8 +18,9 @@ import Protect from "./pages/Protect";
 import Unlock from "./pages/Unlock";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
-import BrowseTools from "./pages/BrowseTools";
 import Contact from "./pages/Contact";
+import Ocr from "./pages/Ocr";
+import Tools from "./pages/Tools";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/home" element={<Index />} />
+          <Route path="/tools" element={<Tools />} />
           <Route path="/editor" element={<Editor />} />
           <Route path="/merge" element={<Merge />} />
           <Route path="/alternate-mix" element={<AlternateMix />} />
@@ -44,9 +46,9 @@ const App = () => (
           <Route path="/watermark" element={<Watermark />} />
           <Route path="/protect" element={<Protect />} />
           <Route path="/unlock" element={<Unlock />} />
+          <Route path="/ocr" element={<Ocr />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/browse-tools" element={<BrowseTools />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

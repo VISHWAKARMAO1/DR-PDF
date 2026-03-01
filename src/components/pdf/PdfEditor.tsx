@@ -917,7 +917,7 @@ export default function PdfEditor() {
         </div>
 
         <aside className="lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
-          <Card className="h-full p-4">
+          <Card className="h-full overflow-y-auto scrollbar-hide p-4">
             <h2 className="text-sm font-semibold">Inspector</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               Click text to edit. Drag the active edit to reposition.

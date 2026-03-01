@@ -18,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { PdfExportPreview } from "@/components/pdf/PdfExportPreview";
+import { downloadBlob, u8ToArrayBuffer } from "@/lib/blob";
 import { FileDown, Upload } from "lucide-react";
 
 // Ensure worker is configured (safe to run multiple times)
@@ -25,21 +26,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url
 ).toString();
-
-function u8ToArrayBuffer(u8: Uint8Array): ArrayBuffer {
-  return u8.buffer.slice(u8.byteOffset, u8.byteOffset + u8.byteLength) as ArrayBuffer;
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
-}
 
 function formatMB(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
@@ -155,7 +141,7 @@ export default function Compress() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground pt-28">
+    <div className="flex min-h-screen flex-col bg-background text-foreground pt-24">
       <TopNav variant="editor" />
 
       <main className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-6 px-4 pb-6">

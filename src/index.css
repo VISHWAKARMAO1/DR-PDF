@@ -88,4 +88,37 @@
   .glass {
     @apply backdrop-blur-lg bg-[hsl(var(--glass-bg)/0.5)] border border-[hsl(var(--glass-border)/0.5)] shadow-2xl shadow-primary/5;
   }
+
+  .brand-gradient-bg {
+    @apply bg-gradient-to-r from-primary via-purple-500 to-cyan-400 bg-[length:200%_200%];
+  }
+
+  .brand-gradient-text {
+    @apply brand-gradient-bg bg-clip-text text-transparent;
+  }
+
+  .brand-gradient-animate {
+    animation: brand-gradient-shift 8s ease-in-out infinite;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes brand-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
